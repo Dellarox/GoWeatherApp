@@ -19,9 +19,15 @@ func main() {
 	utils.LoadEnv()
 	weatherLabel := widget.NewLabel("Loading Weather Information...")
 	owmApiKey := os.Getenv("OWM_API_KEY")
-	weatherWidget := weather.SetupWeather(owmApiKey, "Złocieniec,PL", weatherLabel)
 
-	content := container.NewVBox(clockWidget, weatherWidget)
+	locationEntry := widget.NewEntry()
+	locationEntry.SetPlaceHolder("Enter the location")
+
+	saveLocationButton := widget.NewButton("Save location", func() {
+		weather.SetupWeather(owmApiKey, locationEntry.Text, weatherLabel)
+	})
+
+	content := container.NewVBox(clockWidget, locationEntry, saveLocationButton, weatherLabel)
 
 	win.SetContent(content)
 	win.ShowAndRun()
