@@ -9,6 +9,8 @@ func SetupWeather(apiKey, location string, weatherLabel *widget.Label) *widget.L
 	weather := FetchWeather(apiKey, location)
 	weatherLabel.SetText(FormatWeather(weather))
 
+	WriteLog("weather_logs/history.csv", weather)
+
 	go func() {
 		for range time.Tick(10 * time.Minute) {
 			weather := FetchWeather(apiKey, location)

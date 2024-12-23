@@ -4,6 +4,7 @@ import (
 	"WeatherApp/utils"
 	"fmt"
 	owm "github.com/briandowns/openweathermap"
+	"time"
 )
 
 type Coordinates struct {
@@ -12,7 +13,7 @@ type Coordinates struct {
 }
 
 type Weather struct {
-	placeName   string
+	location    string
 	temperature float64
 	description string
 	coordinates Coordinates
@@ -21,14 +22,14 @@ type Weather struct {
 }
 
 func FetchWeather(apiKey, location string) Weather {
-	w, err := owm.NewCurrent("C", "PL", apiKey)
+	w, err := owm.NewCurrent("C", "EN", apiKey)
 	utils.CheckError(err)
 
 	err = w.CurrentByName(location)
 	utils.CheckError(err)
 
 	return Weather{
-		placeName:   w.Name,
+		location:    w.Name,
 		temperature: w.Main.Temp,
 		description: w.Weather[0].Description,
 		coordinates: Coordinates{
@@ -42,8 +43,9 @@ func FetchWeather(apiKey, location string) Weather {
 
 func FormatWeather(weather Weather) string {
 	return fmt.Sprintf(
-		"Miejsce: %s\nTemperatura: %.2f°C\nOpis: %s\nWilgotność: %d%%\nWiatr: %.2f m/s\nKoordynaty: (%.3f, %.3f)",
-		weather.placeName,
+		"Location: %s\nTemperature: %.2f°C\nWeather description: %s\nHumidity: %d%%\nWind speed: %.2f"+
+			"m/s\nCoordinates: (%.3f, %.3f)",
+		weather.location,
 		weather.temperature,
 		weather.description,
 		weather.humidity,
@@ -51,4 +53,22 @@ func FormatWeather(weather Weather) string {
 		weather.coordinates.Longitude,
 		weather.coordinates.Latitude,
 	)
+}
+
+func WriteLog(filename string, weather Weather) {
+	writer, file := utils.CreateCSVWriter(filename)
+	defer file.Close()
+	defer writer.Flush()
+
+	record := []string{
+		weather.location,
+		fmt.Sprintf("%.2f", weather.temperature),
+		weather.description,
+		fmt.Sprintf("%d", weather.humidity),
+		fmt.Sprintf("%.2f", weather.windSpeed),
+		fmt.Sprintf("(%.3f, %.3f)", weather.coordinates.Longitude, weather.coordinates.Latitude),
+		time.Now().Format("2006-01-02_15-04-05"),
+	}
+
+	utils.WriteCSVRecord(writer, record)
 }
