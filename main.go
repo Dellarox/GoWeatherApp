@@ -4,8 +4,10 @@ import (
 	"WeatherApp/clock"
 	"WeatherApp/utils"
 	"WeatherApp/weather"
+	"errors"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
 	"os"
 )
@@ -24,7 +26,11 @@ func main() {
 	locationEntry.SetPlaceHolder("Enter the location")
 
 	saveLocationButton := widget.NewButton("Save location", func() {
-		weather.SetupWeather(owmApiKey, locationEntry.Text, weatherLabel)
+		if locationEntry.Text == "" {
+			dialog.ShowError(errors.New("Please enter a location"), win)
+		} else {
+			weather.SetupWeather(owmApiKey, locationEntry.Text, weatherLabel)
+		}
 	})
 
 	content := container.NewVBox(clockWidget, locationEntry, saveLocationButton, weatherLabel)
